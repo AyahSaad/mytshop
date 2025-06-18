@@ -13,7 +13,7 @@ function ForgotPassword() {
     console.log("Submitted values:", values);
     try {
       const response = await axios.post(
-        "http://mytshop.runasp.net/api/Account/ForgotPassword",
+        `${import.meta.env.VITE_BURL}Account/ForgotPassword`,
         values
       );
       console.log(response.data);

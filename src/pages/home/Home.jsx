@@ -1,7 +1,13 @@
-import React from "react";
+import Products from "../../components/products/Products";
+import Category from "./../../components/category/Category";
 
 function Home() {
-  return <div>Home</div>;
+  return (
+    <>
+      <Category />
+      <Products />
+    </>
+  );
 }
 
 export default Home;

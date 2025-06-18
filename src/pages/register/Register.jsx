@@ -17,7 +17,7 @@ function Register() {
     console.log("Submitted values:", values);
     try {
       const response = await axios.post(
-        "http://mytshop.runasp.net/api/Account/register",
+        `${import.meta.env.VITE_BURL}Account/register`,
         values
       );
       console.log(response.data);

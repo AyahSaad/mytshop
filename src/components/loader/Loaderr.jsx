@@ -1,11 +1,11 @@
-import React, { useState } from "react";
+import { Button } from "@mui/material";
 
 function Loaderr() {
   return (
     <>
-      <div class="spinner-border text-secondary" role="status">
-        <span class="visually-hidden">Loading...</span>
-      </div>
+      <Button loading loadingIndicator="Loading…" variant="outlined">
+        Loading...
+      </Button>
     </>
   );
 }

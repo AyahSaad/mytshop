@@ -1,4 +1,10 @@
-import { Box, Button, InputAdornment, TextField } from "@mui/material";
+import {
+  Box,
+  Button,
+  InputAdornment,
+  TextField,
+  Typography,
+} from "@mui/material";
 import { AlternateEmail, Password } from "@mui/icons-material";
 import { useForm } from "react-hook-form";
 import axios from "axios";
@@ -12,9 +18,10 @@ function Login() {
     console.log("Submitted values:", values);
     try {
       const response = await axios.post(
-        "http://mytshop.runasp.net/api/Account/login",
+        `${import.meta.env.VITE_BURL}Account/login`,
         values
       );
+      localStorage.setItem("userToken", response.data.token);
       console.log(response.data);
       alert("Login successful!");
       navigate("/");
@@ -62,6 +69,24 @@ function Login() {
       <Button variant="outlined" type="submit" sx={{ m: 1 }}>
         Login
       </Button>
+
+      <Typography variant="body2" sx={{ m: 1 }}>
+        <Button
+          variant="text"
+          color="primary"
+          onClick={() => navigate("/password")}
+        >
+          Forgot Password?
+        </Button>
+        {" | "}
+        <Button
+          variant="text"
+          color="primary"
+          onClick={() => navigate("/register")}
+        >
+          Register
+        </Button>
+      </Typography>
     </Box>
   );
 }

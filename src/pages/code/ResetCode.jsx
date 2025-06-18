@@ -13,7 +13,7 @@ function ResetCode() {
     console.log("Submitted values:", values);
     try {
       const response = await axios.patch(
-        "http://mytshop.runasp.net/api/Account/SendCode",
+        `${import.meta.env.VITE_BURL}Account/SendCode`,
         values
       );
       console.log(response.data);
