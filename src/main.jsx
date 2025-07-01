@@ -1,12 +1,14 @@
-import { StrictMode } from "react";
-import { createRoot } from "react-dom/client";
-import CssBaseline from "@mui/material/CssBaseline";
+import ReactDOM from "react-dom/client";
 import "./index.css";
 import App from "./App.jsx";
+import { ToastContainer } from "react-toastify";
+import ThemeContextProvider from "./context/ThemeContext.jsx";
 
-createRoot(document.getElementById("root")).render(
-  <StrictMode>
-    <CssBaseline />
-    <App />
-  </StrictMode>
+ReactDOM.createRoot(document.getElementById("root")).render(
+  <>
+    <ThemeContextProvider>
+      <App />
+      <ToastContainer />
+    </ThemeContextProvider>
+  </>
 );

@@ -8,31 +8,30 @@ import {
   CardMedia,
   Box,
 } from "@mui/material";
-import axios from "axios";
-import { useEffect, useState } from "react";
 import { Link } from "react-router";
+import Loaderr from "../loader/Loaderr";
+import { useQuery } from "@tanstack/react-query";
+import axios from "axios";
 
 function Products() {
-  const [products, setProducts] = useState([]);
-
-  const getProducts = async () => {
-    try {
-      const response = await axios.get(`${import.meta.env.VITE_BURL}products`);
-
-      console.log(response.data);
-      setProducts(response.data);
-    } catch (error) {
-      console.error("No products:", error.response?.data || error);
-    }
+  const fetchProducts = async () => {
+    const { data } = await axios.get(`${import.meta.env.VITE_BURL}products`);
+    return data;
   };
-
-  useEffect(() => {
-    getProducts();
-  }, []);
+  const { data, isLoading, isError, error } = useQuery({
+    queryKey: ["products"],
+    queryFn: fetchProducts,
+    staleTime: 6 * 60 * 60 * 1000,
+    refetchOnWindowFocus: true,
+    retry: 3,
+  });
+  if (isError)
+    return console.error("No Products:", error.response?.data || error);
+  if (isLoading) return <Loaderr />;
 
   return (
     <Grid container spacing={2} padding={2}>
-      {products.map((product) => (
+      {data.map((product) => (
         <Grid item xs={12} sm={6} md={4} lg={4} xl={3} key={product.id}>
           <Card>
             <CardMedia
@@ -57,6 +56,7 @@ function Products() {
                   color="primary"
                   component={Link}
                   to={`/product/${product.id}`}
+                  viewTransition
                 >
                   Details
                 </Button>

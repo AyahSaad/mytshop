@@ -1,11 +1,14 @@
-import { Button } from "@mui/material";
+import { Backdrop, Button, CircularProgress } from "@mui/material";
 
 function Loaderr() {
   return (
     <>
-      <Button loading loadingIndicator="Loading…" variant="outlined">
-        Loading...
-      </Button>
+      <Backdrop
+        sx={(theme) => ({ color: "#fff", zIndex: theme.zIndex.drawer + 1 })}
+        open={open}
+      >
+        <CircularProgress color="inherit" />
+      </Backdrop>
     </>
   );
 }

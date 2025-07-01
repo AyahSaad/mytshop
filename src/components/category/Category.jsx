@@ -7,31 +7,30 @@ import {
   Grid,
   Box,
 } from "@mui/material";
+import Loaderr from "../loader/Loaderr";
+import { useQuery } from "@tanstack/react-query";
 import axios from "axios";
-import { useEffect, useState } from "react";
 
 function Category() {
-  const [categories, setCategories] = useState([]);
-
-  const getCategories = async () => {
-    try {
-      const response = await axios.get(
-        `${import.meta.env.VITE_BURL}categories`
-      );
-      console.log(response.data);
-      setCategories(response.data);
-    } catch (error) {
-      console.error("No Categories:", error.response?.data || error);
-    }
+  const fetchCategories = async () => {
+    const { data } = await axios.get(`${import.meta.env.VITE_BURL}categories`);
+    return data;
   };
+  const { data, isLoading, isError, error } = useQuery({
+    queryKey: ["categories"],
+    queryFn: fetchCategories,
+    staleTime: 6 * 60 * 60 * 1000,
+    refetchOnWindowFocus: true,
+    retry: 3,
+  });
 
-  useEffect(() => {
-    getCategories();
-  }, []);
+  if (isError)
+    return console.error("No Categories:", error.response?.data || error);
+  if (isLoading) return <Loaderr />;
 
   return (
     <Grid container spacing={2} padding={2}>
-      {categories.map((category) => (
+      {data.map((category) => (
         <Grid item xs={12} sm={6} md={4} lg={4} xl={3} key={category.id}>
           <Card>
             <CardContent>

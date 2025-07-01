@@ -12,29 +12,63 @@ import Button from "@mui/material/Button";
 import Tooltip from "@mui/material/Tooltip";
 import MenuItem from "@mui/material/MenuItem";
 import AdbIcon from "@mui/icons-material/Adb";
-import { Link } from "react-router";
+import Badge from "@mui/material/Badge";
+import ShoppingCartIcon from "@mui/icons-material/ShoppingCart";
+import { Link, useNavigate } from "react-router-dom";
+import { ThemeContext } from "../../context/ThemeContext";
+import { DarkMode, LightMode } from "@mui/icons-material";
+import AxiosAut from "./../../api/AxiosAut";
+import { useQuery } from "@tanstack/react-query";
 
-const pages = ["Register", "Login", "Cart"];
+const pagesGust = ["Register", "login"];
+const pagesAuth = ["Cart"];
 const settings = ["Profile", "Account", "Dashboard", "Logout"];
 
 function Navbar() {
+  const navigate = useNavigate();
+  const isLoggedIn = Boolean(localStorage.getItem("userToken"));
+  const { mode, toggleTheme } = React.useContext(ThemeContext);
+
+  const fetchCartItems = async () => {
+    const { data } = await AxiosAut.get(`${import.meta.env.VITE_BURL}Carts`);
+    return data;
+  };
+
+  const { data } = useQuery({
+    queryKey: ["cartItems"],
+    queryFn: fetchCartItems,
+    staleTime: 6000,
+    refetchOnWindowFocus: true,
+    retry: 3,
+    enabled: isLoggedIn, // prevent API call when not logged in
+  });
+
+  const cartItems = data?.cartResponse?.length ?? 0;
+
   const [anchorElNav, setAnchorElNav] = React.useState(null);
   const [anchorElUser, setAnchorElUser] = React.useState(null);
 
-  const handleOpenNavMenu = (event) => {
-    setAnchorElNav(event.currentTarget);
-  };
-  const handleOpenUserMenu = (event) => {
-    setAnchorElUser(event.currentTarget);
+  const handleOpenNavMenu = (event) => setAnchorElNav(event.currentTarget);
+  const handleOpenUserMenu = (event) => setAnchorElUser(event.currentTarget);
+  const handleCloseNavMenu = () => setAnchorElNav(null);
+  const handleCloseUserMenu = () => setAnchorElUser(null);
+
+  const handleLogout = () => {
+    localStorage.removeItem("userToken");
+    handleCloseUserMenu();
+    navigate("/login");
   };
 
-  const handleCloseNavMenu = () => {
-    setAnchorElNav(null);
+  const handleSettingClick = (setting) => {
+    handleCloseUserMenu();
+    if (setting === "Logout") {
+      handleLogout();
+    } else {
+      navigate(`/${setting.toLowerCase()}`);
+    }
   };
 
-  const handleCloseUserMenu = () => {
-    setAnchorElUser(null);
-  };
+  const pages = isLoggedIn ? pagesAuth : pagesGust;
 
   return (
     <AppBar position="static">
@@ -46,7 +80,6 @@ function Navbar() {
             noWrap
             component={Link}
             to="/"
-            href="#app-bar-with-responsive-menu"
             sx={{
               mr: 2,
               display: { xs: "none", md: "flex" },
@@ -60,29 +93,20 @@ function Navbar() {
             LOGO
           </Typography>
 
+          {/* Mobile Menu */}
           <Box sx={{ flexGrow: 1, display: { xs: "flex", md: "none" } }}>
             <IconButton
               size="large"
-              aria-label="account of current user"
-              aria-controls="menu-appbar"
-              aria-haspopup="true"
               onClick={handleOpenNavMenu}
               color="inherit"
             >
               <MenuIcon />
             </IconButton>
             <Menu
-              id="menu-appbar"
               anchorEl={anchorElNav}
-              anchorOrigin={{
-                vertical: "bottom",
-                horizontal: "left",
-              }}
+              anchorOrigin={{ vertical: "bottom", horizontal: "left" }}
               keepMounted
-              transformOrigin={{
-                vertical: "top",
-                horizontal: "left",
-              }}
+              transformOrigin={{ vertical: "top", horizontal: "left" }}
               open={Boolean(anchorElNav)}
               onClose={handleCloseNavMenu}
               sx={{ display: { xs: "block", md: "none" } }}
@@ -92,20 +116,28 @@ function Navbar() {
                   key={page}
                   onClick={handleCloseNavMenu}
                   component={Link}
-                  to={`/${page}`}
+                  to={`/${page.toLowerCase()}`}
                 >
-                  <Typography sx={{ textAlign: "center" }}>{page}</Typography>
+                  <Typography textAlign="center">
+                    {page === "Cart" ? `Cart (${cartItems})` : page}
+                  </Typography>
                 </MenuItem>
               ))}
+              {isLoggedIn && (
+                <MenuItem onClick={handleLogout}>
+                  <Typography textAlign="center">Logout</Typography>
+                </MenuItem>
+              )}
             </Menu>
           </Box>
+
+          {/* Mobile Logo */}
           <AdbIcon sx={{ display: { xs: "flex", md: "none" }, mr: 1 }} />
           <Typography
             variant="h5"
             noWrap
             component={Link}
             to="/"
-            href="#app-bar-with-responsive-menu"
             sx={{
               mr: 2,
               display: { xs: "flex", md: "none" },
@@ -119,46 +151,61 @@ function Navbar() {
           >
             LOGO
           </Typography>
+
+          {/* Desktop Menu */}
           <Box sx={{ flexGrow: 1, display: { xs: "none", md: "flex" } }}>
             {pages.map((page) => (
               <Button
                 key={page}
                 component={Link}
-                to={`/${page}`}
+                to={`/${page.toLowerCase()}`}
                 onClick={handleCloseNavMenu}
                 sx={{ my: 2, color: "white", display: "block" }}
               >
-                {page}
+                {page === "Cart" ? (
+                  <Badge badgeContent={cartItems} color="error">
+                    <ShoppingCartIcon />
+                  </Badge>
+                ) : (
+                  page
+                )}
               </Button>
             ))}
+            {isLoggedIn && (
+              <Button
+                onClick={handleLogout}
+                sx={{ my: 2, color: "white", display: "block" }}
+              >
+                Logout
+              </Button>
+            )}
           </Box>
+
+          {/* Theme & Avatar */}
           <Box sx={{ flexGrow: 0 }}>
+            <IconButton onClick={toggleTheme} color="inherit">
+              {mode === "light" ? <DarkMode /> : <LightMode />}
+            </IconButton>
             <Tooltip title="Open settings">
               <IconButton onClick={handleOpenUserMenu} sx={{ p: 0 }}>
-                <Avatar alt="Remy Sharp" src="/static/images/avatar/2.jpg" />
+                <Avatar alt="User Avatar" src="/static/images/avatar/2.jpg" />
               </IconButton>
             </Tooltip>
             <Menu
               sx={{ mt: "45px" }}
-              id="menu-appbar"
               anchorEl={anchorElUser}
-              anchorOrigin={{
-                vertical: "top",
-                horizontal: "right",
-              }}
+              anchorOrigin={{ vertical: "top", horizontal: "right" }}
               keepMounted
-              transformOrigin={{
-                vertical: "top",
-                horizontal: "right",
-              }}
+              transformOrigin={{ vertical: "top", horizontal: "right" }}
               open={Boolean(anchorElUser)}
               onClose={handleCloseUserMenu}
             >
               {settings.map((setting) => (
-                <MenuItem key={setting} onClick={handleCloseUserMenu}>
-                  <Typography sx={{ textAlign: "center" }}>
-                    {setting}
-                  </Typography>
+                <MenuItem
+                  key={setting}
+                  onClick={() => handleSettingClick(setting)}
+                >
+                  <Typography textAlign="center">{setting}</Typography>
                 </MenuItem>
               ))}
             </Menu>
@@ -168,4 +215,5 @@ function Navbar() {
     </AppBar>
   );
 }
+
 export default Navbar;

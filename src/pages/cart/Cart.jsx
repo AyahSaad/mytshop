@@ -1,5 +1,4 @@
-import axios from "axios";
-import { useEffect, useState } from "react";
+import React from "react";
 import {
   Card,
   CardMedia,
@@ -12,140 +11,56 @@ import {
 } from "@mui/material";
 import { Add, Delete, Remove } from "@mui/icons-material";
 import Loaderr from "../../components/loader/Loaderr";
+import { Link } from "react-router-dom";
+import AxiosAut from "../../api/AxiosAut";
+import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
+
 function Cart() {
-  const [products, setProducts] = useState();
-  const [isLoading, setLoading] = useState(true);
-  const userToken = localStorage.getItem("userToken");
-  const getProductFromCart = async () => {
-    try {
-      const response = await axios.get(`${import.meta.env.VITE_BURL}Carts`, {
-        headers: { AUTHORIZATION: `Bearer ${userToken}` },
-      });
+  const queryClient = useQueryClient();
 
-      console.log(response);
-      setProducts(response.data.cartResponse);
-      setLoading(false);
-    } catch (error) {
-      console.error("No products :", error.response?.data || error);
-      setLoading(false);
-    }
-  };
+  const { data, isLoading, isError, error, refetch } = useQuery({
+    queryKey: ["cartItems"],
+    queryFn: async () => {
+      const { data } = await AxiosAut.get("/Carts");
+      return data;
+    },
+    staleTime: 6000,
+    refetchOnWindowFocus: true,
+  });
 
-  const increaseQty = async (id) => {
-    const userToken = localStorage.getItem("userToken");
-    try {
-      const response = await axios.patch(
-        `${import.meta.env.VITE_BURL}Carts/increaseCount/${id}`,
-        {},
-        {
-          headers: { AUTHORIZATION: `Bearer ${userToken}` },
-        }
-      );
+  const increaseQty = useMutation({
+    mutationFn: (id) => AxiosAut.patch(`/Carts/increaseCount/${id}`),
+    onSuccess: () => queryClient.invalidateQueries(["cartItems"]),
+  });
 
-      const updatedProduct = products.map((product) => {
-        if (product.id === id) {
-          return { ...product, count: product.count + 1 };
-        } else {
-          return product;
-        }
-      });
+  const decreaseQty = useMutation({
+    mutationFn: (id) => AxiosAut.patch(`/Carts/decreaseCount/${id}`),
+    onSuccess: () => queryClient.invalidateQueries(["cartItems"]),
+  });
 
-      setProducts(updatedProduct);
-      console.log(response);
-    } catch (error) {
-      console.error(
-        "Error increasing quantity:",
-        error.response?.data || error
-      );
-      alert("Failed to increase quantity. Please try again.");
-    }
-  };
+  const deleteItem = useMutation({
+    mutationFn: (id) => AxiosAut.delete(`/Carts/${id}`),
+    onSuccess: () => queryClient.invalidateQueries(["cartItems"]),
+  });
 
-  const decreaseQty = async (id) => {
-    const userToken = localStorage.getItem("userToken");
-    try {
-      const response = await axios.patch(
-        `${import.meta.env.VITE_BURL}Carts/decreaseCount/${id}`,
-        {},
-        {
-          headers: { AUTHORIZATION: `Bearer ${userToken}` },
-        }
-      );
+  const clearCart = useMutation({
+    mutationFn: () => AxiosAut.delete("/Carts/clearCart"),
+    onSuccess: () => queryClient.invalidateQueries(["cartItems"]),
+  });
 
-      let updatedProduct = products
-        .map((product) => {
-          if (product.id === id) {
-            return { ...product, count: product.count - 1 };
-          } else {
-            return product;
-          }
-        })
-        .filter((product) => product.count > 0);
-
-      setProducts(updatedProduct);
-      console.log(response);
-    } catch (error) {
-      console.error(
-        "Error decreasing quantity:",
-        error.response?.data || error
-      );
-      alert("Failed to decrease quantity. Please try again.");
-    }
-  };
-
-  const deleteItem = async (id) => {
-    const userToken = localStorage.getItem("userToken");
-    try {
-      const response = await axios.delete(
-        `${import.meta.env.VITE_BURL}Carts/${id}`,
-        {
-          headers: {
-            Authorization: `Bearer ${userToken}`,
-          },
-        }
-      );
-      if (response.status === 204) {
-        alert("Item deleted successfully.");
-        setProducts((prevProducts) =>
-          prevProducts.filter((product) => product.id !== id)
-        );
-      } else {
-        console.error("Failed to delete item:", response.data);
-      }
-    } catch (error) {
-      console.error("Error deleting item:", error.response?.data || error);
-      alert("Failed to delete item. Try again.");
-    }
-  };
-
-  const clearCart = async () => {
-    const userToken = localStorage.getItem("userToken");
-    try {
-      const response = await axios.delete(
-        `${import.meta.env.VITE_BURL}Carts/clearCart`,
-        {
-          headers: {
-            Authorization: `Bearer ${userToken}`,
-          },
-        }
-      );
-      console.log("Cart cleared successfully:", response.data);
-      alert("Cart cleared successfully:");
-      //update the UI
-      setProducts([]);
-    } catch (error) {
-      console.error("Error clearing cart:", error.response?.data || error);
-      alert("Failed to clear cart. Please try again.");
-    }
-  };
-  useEffect(() => {
-    getProductFromCart();
-  }, []);
-
-  if (isLoading) {
-    return <Loaderr />;
+  if (isError) {
+    console.error("Cart Load Error:", error.response?.data || error);
+    return <Typography>Error loading cart</Typography>;
   }
 
+  if (isLoading) return <Loaderr />;
+
+  const products = data.cartResponse || [];
+  const totalItems = products.reduce((sum, item) => sum + item.count, 0);
+  const totalPrice = products.reduce(
+    (sum, item) => sum + item.count * item.price,
+    0
+  );
   return (
     <Box>
       <Typography variant="h4" gutterBottom>
@@ -154,7 +69,7 @@ function Cart() {
 
       <Grid container spacing={4}>
         <Grid item size={{ xs: 12, md: 8 }}>
-          {products.map((product) => (
+          {data.cartResponse.map((product) => (
             <Card
               sx={{
                 display: "flex",
@@ -178,15 +93,15 @@ function Cart() {
                 </Typography>
               </CardContent>
               <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
-                <IconButton onClick={() => decreaseQty(product.id)}>
+                <IconButton onClick={() => decreaseQty.mutate(product.id)}>
                   <Remove />
                 </IconButton>
                 <Typography>{product.count}</Typography>
-                <IconButton onClick={() => increaseQty(product.id)}>
+                <IconButton onClick={() => increaseQty.mutate(product.id)}>
                   <Add />
                 </IconButton>
                 <IconButton
-                  onClick={() => deleteItem(product.id)}
+                  onClick={() => deleteItem.mutate(product.id)}
                   color="error"
                 >
                   <Delete />
@@ -196,14 +111,49 @@ function Cart() {
           ))}
 
           {products.length > 0 && (
-            <Button variant="contained" color="secondary" onClick={clearCart}>
+            <Button
+              variant="contained"
+              color="secondary"
+              onClick={clearCart.mutate}
+            >
               Clear Cart
             </Button>
           )}
         </Grid>
 
         <Grid item size={{ xs: 12, md: 4 }}>
-          <Typography variant="h4">Order Summary </Typography>
+          <Card sx={{ p: 3, borderRadius: 2 }}>
+            <Typography variant="h5" color="primary" gutterBottom>
+              Order Summary
+            </Typography>
+            <Box display="flex" justifyContent="space-between" my={1}>
+              <Typography variant="body1" color="primary">
+                Total Items:
+              </Typography>
+              <Typography variant="body1" color="primary">
+                {totalItems}
+              </Typography>
+            </Box>
+            <Box display="flex" justifyContent="space-between" my={1}>
+              <Typography variant="body1" color="primary">
+                Total Price:
+              </Typography>
+              <Typography variant="body1" color="primary">
+                ${totalPrice}
+              </Typography>
+            </Box>
+            <Button
+              variant="contained"
+              color="primary"
+              fullWidth
+              sx={{ mt: 3 }}
+              disabled={totalItems === 0}
+              component={Link}
+              to="/checkout"
+            >
+              Proceed to Checkout
+            </Button>
+          </Card>
         </Grid>
       </Grid>
     </Box>
