@@ -1,6 +1,6 @@
 import { Navigate } from "react-router";
 
-function Protectedrouter({ children }) {
+function ProtectedRouter({ children }) {
   const userToken = localStorage.getItem("userToken");
 
   if (!userToken) {
@@ -9,4 +9,4 @@ function Protectedrouter({ children }) {
   return children;
 }
 
-export default Protectedrouter;
+export default ProtectedRouter;

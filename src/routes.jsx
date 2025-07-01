@@ -10,11 +10,11 @@ import ResetCode from "./pages/code/ResetCode";
 import Product from "./pages/product/Product";
 import Cart from "./pages/cart/Cart";
 import Checkout from "./pages/checkout/Checkout";
-import Protectedrouter from "./components/protectedrouter/Protectedrouter";
 import DashBoardLayout from "./layout/DashBoardLayout";
 import CategoryIndex from "./pages/Admin/category/CategoryIndex";
 import DashBoardProtectedRoter from "./components/protectedRouter/DashBoardProtectedRoter";
 import Unauthorized from "./Unauthorized/Unauthorized";
+import ProtectedRouter from "./components/protectedRouter/ProtectedRouter";
 const routes = createBrowserRouter([
   {
     path: "/",
@@ -36,17 +36,17 @@ const routes = createBrowserRouter([
       {
         path: "/cart",
         element: (
-          <Protectedrouter>
+          <ProtectedRouter>
             <Cart />
-          </Protectedrouter>
+          </ProtectedRouter>
         ),
       },
       {
         path: "/checkout",
         element: (
-          <Protectedrouter>
+          <ProtectedRouter>
             <Checkout />
-          </Protectedrouter>
+          </ProtectedRouter>
         ),
       },
       {
