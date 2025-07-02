@@ -7,37 +7,43 @@ import {
   FormControlLabel,
   Radio,
   Button,
+  CircularProgress,
 } from "@mui/material";
-import axios from "axios";
 import { useState } from "react";
+import { useMutation } from "@tanstack/react-query";
+import AxiosAut from "../../api/AxiosAut";
+import { toast } from "react-toastify";
 
 function Checkout() {
-  const [paymentMethod, setPaymentMethod] = useState("visa");
+  const [paymentMethod, setPaymentMethod] = useState("Visa");
 
   const handleChange = (event) => {
     setPaymentMethod(event.target.value);
   };
 
-  const handleConfirm = async () => {
-    alert(`Payment method selected: ${paymentMethod}`);
-    const userToken = localStorage.getItem("userToken");
-    try {
-      const response = await axios.post(
-        `${import.meta.env.VITE_BURL}CheckOuts/Pay`,
-        { PaymentMethod: paymentMethod },
-        {
-          headers: { Authorization: `Bearer ${userToken}` },
-        }
-      );
-
-      if (paymentMethod == "Visa") {
-        location.href = response.data.url;
+  const confirmPayment = useMutation({
+    mutationFn: async (method) => {
+      const response = await AxiosAut.post("/CheckOuts/Pay", {
+        PaymentMethod: method,
+      });
+      return response.data;
+    },
+    onSuccess: (data) => {
+      if (paymentMethod === "Visa") {
+        toast.info("Redirecting to payment gateway...", { autoClose: 2000 });
+        window.location.href = data.url;
+      } else {
+        toast.success("Order confirmed with Cash on Delivery!");
       }
-      console.log(response);
-    } catch (error) {
-      console.error("Error:", error.response?.data || error);
-      alert("Failed to pay. Please try again.");
-    }
+    },
+    onError: (error) => {
+      console.error("Payment Error:", error.response?.data || error);
+      toast.error("Payment failed. Please try again.");
+    },
+  });
+
+  const handleConfirm = () => {
+    confirmPayment.mutate(paymentMethod);
   };
 
   return (
@@ -61,8 +67,17 @@ function Checkout() {
           </RadioGroup>
         </FormControl>
 
-        <Button fullWidth variant="contained" onClick={handleConfirm}>
-          Confirm Payment
+        <Button
+          fullWidth
+          variant="contained"
+          onClick={handleConfirm}
+          disabled={confirmPayment.isPending}
+        >
+          {confirmPayment.isPending ? (
+            <CircularProgress size={24} color="inherit" />
+          ) : (
+            "Confirm Payment"
+          )}
         </Button>
       </Card>
     </Box>
