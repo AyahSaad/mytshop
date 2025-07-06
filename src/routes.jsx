@@ -15,6 +15,10 @@ import CategoryIndex from "./pages/Admin/category/CategoryIndex";
 import DashBoardProtectedRoter from "./components/protectedRouter/DashBoardProtectedRoter";
 import Unauthorized from "./Unauthorized/Unauthorized";
 import ProtectedRouter from "./components/protectedRouter/ProtectedRouter";
+import ChangePassword from "./pages/profile/ChangePassword";
+import UserProfile from "./pages/profile/UserProfile";
+import UserOrders from "./pages/profile/UserOrders";
+import UserInfo from "./pages/profile/UserInfo";
 const routes = createBrowserRouter([
   {
     path: "/",
@@ -33,6 +37,7 @@ const routes = createBrowserRouter([
         path: "/register",
         element: <Register />,
       },
+
       {
         path: "/cart",
         element: (
@@ -84,6 +89,37 @@ const routes = createBrowserRouter([
       {
         path: "category/index",
         element: <CategoryIndex />,
+      },
+    ],
+  },
+  {
+    path: "/profile",
+    element: (
+      <ProtectedRouter>
+        <MainLayout />
+      </ProtectedRouter>
+    ),
+    children: [
+      {
+        element: <UserProfile />,
+        children: [
+          {
+            index: true,
+            element: <UserInfo />,
+          },
+          {
+            path: "info",
+            element: <UserInfo />,
+          },
+          {
+            path: "change-password",
+            element: <ChangePassword />,
+          },
+          {
+            path: "orders",
+            element: <UserOrders />,
+          },
+        ],
       },
     ],
   },

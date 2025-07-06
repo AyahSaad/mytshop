@@ -21,7 +21,7 @@ import AxiosAut from "./../../api/AxiosAut";
 import { useQuery } from "@tanstack/react-query";
 
 const pagesGust = ["Register", "login"];
-const pagesAuth = ["Cart"];
+const pagesAuth = ["Cart", "Profile"];
 const settings = ["Profile", "Account", "Dashboard", "Logout"];
 
 function Navbar() {
