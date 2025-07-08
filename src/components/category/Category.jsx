@@ -7,6 +7,7 @@ import {
   Grid,
   Box,
 } from "@mui/material";
+import { Link } from "react-router";
 import Loaderr from "../loader/Loaderr";
 import { useQuery } from "@tanstack/react-query";
 import axios from "axios";
@@ -40,7 +41,13 @@ function Category() {
             </CardContent>
             <CardActions>
               <Box width="100%" display="flex" justifyContent="center">
-                <Button size="small" variant="contained" color="primary">
+                <Button
+                  size="small"
+                  variant="contained"
+                  color="primary"
+                  component={Link}
+                  to={`/categories/${category.id}/products`}
+                >
                   Details
                 </Button>
               </Box>

@@ -21,8 +21,8 @@ import AxiosAut from "./../../api/AxiosAut";
 import { useQuery } from "@tanstack/react-query";
 
 const pagesGust = ["Register", "login"];
-const pagesAuth = ["Cart", "Profile"];
-const settings = ["Profile", "Account", "Dashboard", "Logout"];
+const pagesAuth = []; // Removed "Cart" to avoid duplication in mobile menu
+const settings = ["Profile", "Logout"];
 
 function Navbar() {
   const navigate = useNavigate();
@@ -40,7 +40,7 @@ function Navbar() {
     staleTime: 6000,
     refetchOnWindowFocus: true,
     retry: 3,
-    enabled: isLoggedIn, // prevent API call when not logged in
+    enabled: isLoggedIn,
   });
 
   const cartItems = data?.cartResponse?.length ?? 0;
@@ -55,6 +55,7 @@ function Navbar() {
 
   const handleLogout = () => {
     localStorage.removeItem("userToken");
+    localStorage.removeItem("userName");
     handleCloseUserMenu();
     navigate("/login");
   };
@@ -93,7 +94,7 @@ function Navbar() {
             LOGO
           </Typography>
 
-          {/* Mobile Menu */}
+          {/* Mobile Menu Button */}
           <Box sx={{ flexGrow: 1, display: { xs: "flex", md: "none" } }}>
             <IconButton
               size="large"
@@ -118,14 +119,12 @@ function Navbar() {
                   component={Link}
                   to={`/${page.toLowerCase()}`}
                 >
-                  <Typography textAlign="center">
-                    {page === "Cart" ? `Cart (${cartItems})` : page}
-                  </Typography>
+                  <Typography textAlign="center">{page}</Typography>
                 </MenuItem>
               ))}
               {isLoggedIn && (
                 <MenuItem onClick={handleLogout}>
-                  <Typography textAlign="center">Logout</Typography>
+                  {/* <Typography textAlign="center">Logout</Typography> */}
                 </MenuItem>
               )}
             </Menu>
@@ -162,13 +161,7 @@ function Navbar() {
                 onClick={handleCloseNavMenu}
                 sx={{ my: 2, color: "white", display: "block" }}
               >
-                {page === "Cart" ? (
-                  <Badge badgeContent={cartItems} color="error">
-                    <ShoppingCartIcon />
-                  </Badge>
-                ) : (
-                  page
-                )}
+                {page}
               </Button>
             ))}
             {isLoggedIn && (
@@ -176,16 +169,30 @@ function Navbar() {
                 onClick={handleLogout}
                 sx={{ my: 2, color: "white", display: "block" }}
               >
-                Logout
+                {/* Logout */}
               </Button>
             )}
           </Box>
 
-          {/* Theme & Avatar */}
-          <Box sx={{ flexGrow: 0 }}>
+          {/* Theme Toggle, Cart Icon, and Avatar */}
+          <Box
+            sx={{ flexGrow: 0, display: "flex", alignItems: "center", gap: 2 }}
+          >
+            {/* Theme Toggle */}
             <IconButton onClick={toggleTheme} color="inherit">
               {mode === "light" ? <DarkMode /> : <LightMode />}
             </IconButton>
+
+            {/* Cart Icon */}
+            {isLoggedIn && (
+              <IconButton component={Link} to="/cart" color="inherit">
+                <Badge badgeContent={cartItems} color="error">
+                  <ShoppingCartIcon />
+                </Badge>
+              </IconButton>
+            )}
+
+            {/* User Avatar */}
             <Tooltip title="Open settings">
               <IconButton onClick={handleOpenUserMenu} sx={{ p: 0 }}>
                 <Avatar alt="User Avatar" src="/static/images/avatar/2.jpg" />

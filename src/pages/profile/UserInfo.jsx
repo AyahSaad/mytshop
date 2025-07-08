@@ -6,6 +6,7 @@ import {
   Grid,
   Divider,
   Container,
+  Box,
 } from "@mui/material";
 import { useTheme } from "@mui/material/styles";
 import { useQuery } from "@tanstack/react-query";
@@ -23,6 +24,7 @@ const UserInfo = () => {
     queryKey: ["userInfo"],
     queryFn: async () => {
       const { data } = await AxiosAut.get("/Account/userinfo");
+      console.log("user info:", data);
       return data;
     },
     retry: 2,
@@ -39,34 +41,55 @@ const UserInfo = () => {
   }
 
   return (
-    <Container maxWidth="sm" sx={{ mt: 4 }}>
+    <Container maxWidth="sm" sx={{ mt: 6 }}>
       <Card
-        elevation={3}
+        elevation={6}
         sx={{
+          borderRadius: 3,
           bgcolor: theme.palette.background.paper,
           color: theme.palette.text.primary,
+          p: 2,
         }}
       >
         <CardContent>
           <Typography
             variant="h5"
             gutterBottom
-            sx={{ color: theme.palette.primary.main }}
+            sx={{ color: theme.palette.primary.main, fontWeight: "bold" }}
           >
-            User Information
+            User Profile
           </Typography>
 
-          <Divider sx={{ my: 2 }} />
+          <Divider sx={{ mb: 3 }} />
 
           <Grid container spacing={2}>
-            <Grid item xs={12}>
-              <Typography variant="subtitle2" fontWeight="bold">
-                Email:
-              </Typography>
-              <Typography variant="body2">
-                {userInfo?.email || "Not available"}
-              </Typography>
-            </Grid>
+            {[
+              { label: "First Name", value: userInfo?.firstName },
+              { label: "Last Name", value: userInfo?.lastName },
+              { label: "Username", value: userInfo?.userName },
+              { label: "Email", value: userInfo?.email },
+              {
+                label: "Date of Birth",
+                value: userInfo?.birthOfDate
+                  ? new Date(userInfo.birthOfDate).toLocaleDateString("en-US")
+                  : "Not available",
+              },
+            ].map((item, index) => (
+              <Grid item xs={12} sm={6} key={index}>
+                <Box>
+                  <Typography
+                    variant="subtitle2"
+                    fontWeight="medium"
+                    color="textSecondary"
+                  >
+                    {item.label}
+                  </Typography>
+                  <Typography variant="body1" fontWeight="500">
+                    {item.value || "Not available"}
+                  </Typography>
+                </Box>
+              </Grid>
+            ))}
           </Grid>
         </CardContent>
       </Card>

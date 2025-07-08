@@ -19,6 +19,7 @@ import ChangePassword from "./pages/profile/ChangePassword";
 import UserProfile from "./pages/profile/UserProfile";
 import UserOrders from "./pages/profile/UserOrders";
 import UserInfo from "./pages/profile/UserInfo";
+import CategoryProducts from "./pages/categoryproducts/CategoryProducts";
 const routes = createBrowserRouter([
   {
     path: "/",
@@ -66,6 +67,10 @@ const routes = createBrowserRouter([
         path: "/product/:id",
         element: <Product />,
         viewTransition: true,
+      },
+      {
+        path: "/categories/:id/products",
+        element: <CategoryProducts />,
       },
       {
         path: "/Unauthorized",

@@ -27,15 +27,33 @@ function Login() {
       const { data } = await AxiosAut.post("Account/login", values);
       return data;
     },
-    onSuccess: (data) => {
+    onSuccess: async (data) => {
       localStorage.setItem("userToken", data.token);
-      toast.success("Login successful!", {
-        position: "top-right",
-        autoClose: 5000,
-        theme: "dark",
-        transition: Zoom,
-      });
-      navigate("/");
+
+      try {
+        const response = await AxiosAut.get("/Account/userinfo");
+        localStorage.setItem(
+          "userName",
+          JSON.stringify(response.data.userName)
+        );
+
+        toast.success("Login successful!", {
+          position: "top-right",
+          autoClose: 5000,
+          theme: "dark",
+          transition: Zoom,
+        });
+
+        navigate("/");
+      } catch (error) {
+        toast.error("Failed to fetch user info after login.", {
+          position: "top-right",
+          autoClose: 5000,
+          theme: "dark",
+          transition: Zoom,
+        });
+        console.error("User info fetch error:", error);
+      }
     },
     onError: (error) => {
       console.error("Login error:", error.response?.data || error);
