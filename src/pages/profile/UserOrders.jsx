@@ -14,9 +14,10 @@ import AxiosAut from "../../api/AxiosAut";
 import Loaderr from "../../components/loader/Loaderr";
 
 const UserOrders = () => {
-  const [OrderId, setOrderId] = useState(null);
+  const [orderId, setOrderId] = useState(null);
   const theme = useTheme();
 
+  // Fetch all orders
   const {
     data: orders,
     isLoading,
@@ -31,6 +32,26 @@ const UserOrders = () => {
     staleTime: 10000,
   });
 
+  // Fetch selected order details
+  const {
+    data: selectedOrderDetails,
+    isLoading: isLoadingDetails,
+    isError: isErrorDetails,
+  } = useQuery({
+    queryKey: ["orderDetails", orderId],
+    queryFn: async () => {
+      const { data } = await AxiosAut.get(`/Orders/${orderId}`);
+      console.log("Order Details for ID", orderId, data);
+      return data;
+    },
+    enabled: !!orderId,
+    staleTime: 10000,
+  });
+
+  const toggleDetails = (id) => {
+    setOrderId((prev) => (prev === id ? null : id));
+  };
+
   if (isLoading) return <Loaderr />;
   if (isError) {
     return (
@@ -39,10 +60,6 @@ const UserOrders = () => {
       </Typography>
     );
   }
-
-  const toggleDetails = (id) => {
-    setOrderId(OrderId === id ? null : id);
-  };
 
   return (
     <Box sx={{ px: { xs: 2, md: 6 }, py: { xs: 3, md: 4 } }}>
@@ -113,12 +130,12 @@ const UserOrders = () => {
                         },
                       }}
                     >
-                      {OrderId === order.id ? "Hide Details" : "Details"}
+                      {orderId === order.id ? "Hide Details" : "Details"}
                     </Button>
                   </Grid>
                 </Grid>
 
-                {OrderId === order.id && (
+                {orderId === order.id && (
                   <Box
                     sx={{
                       pl: { xs: 1, sm: 2 },
@@ -127,16 +144,72 @@ const UserOrders = () => {
                       mt: 1,
                     }}
                   >
-                    <Typography variant="body2" mb={1}>
-                      Total Price: ${order.totalPrice.toFixed(2)}
-                    </Typography>
-                    <Typography
-                      variant="body2"
-                      color={theme.palette.text.secondary}
-                    >
-                      Shipped Date:{" "}
-                      {new Date(order.shippedDate).toLocaleDateString("en-US")}
-                    </Typography>
+                    {isLoadingDetails ? (
+                      <Typography>Loading details...</Typography>
+                    ) : isErrorDetails ? (
+                      <Typography color="error">
+                        Failed to load order details.
+                      </Typography>
+                    ) : selectedOrderDetails ? (
+                      <>
+                        <Typography variant="body2" mb={1}>
+                          <strong>Total Price:</strong> $
+                          {selectedOrderDetails.totalPrice.toFixed(2)}
+                        </Typography>
+
+                        <Typography variant="body2" mb={1}>
+                          <strong>Payment Method:</strong>{" "}
+                          {selectedOrderDetails.paymentMethodType}
+                        </Typography>
+
+                        <Typography variant="body2" mb={1}>
+                          <strong>Order Date:</strong>{" "}
+                          {new Date(
+                            selectedOrderDetails.orderDate
+                          ).toLocaleString("en-US")}
+                        </Typography>
+
+                        <Typography variant="body2" mb={1}>
+                          <strong>Shipped Date:</strong>{" "}
+                          {selectedOrderDetails.shippedDate.startsWith("0001")
+                            ? "Not shipped yet"
+                            : new Date(
+                                selectedOrderDetails.shippedDate
+                              ).toLocaleDateString("en-US")}
+                        </Typography>
+
+                        <Typography variant="body2" mb={1}>
+                          <strong>Tracking Number:</strong>{" "}
+                          {selectedOrderDetails.trackingNumber || "N/A"}
+                        </Typography>
+
+                        <Typography variant="body2" mb={1}>
+                          <strong>Carrier:</strong>{" "}
+                          {selectedOrderDetails.carrier || "N/A"}
+                        </Typography>
+
+                        <Typography variant="body2" mt={2} fontWeight="bold">
+                          Products:
+                        </Typography>
+
+                        {selectedOrderDetails.items.map((item, idx) => (
+                          <Box key={idx} sx={{ ml: 2, mt: 1 }}>
+                            <Typography variant="body2">
+                              • {item.productName} — $
+                              {item.totalPrice.toFixed(2)}
+                            </Typography>
+                            {item.note && (
+                              <Typography
+                                variant="caption"
+                                color="text.secondary"
+                              >
+                                Note: {item.note}
+                              </Typography>
+                            )}
+                          </Box>
+                        ))}
+                      </>
+                    ) : null}
                   </Box>
                 )}
 

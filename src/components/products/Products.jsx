@@ -18,7 +18,12 @@ function Products() {
     const { data } = await axios.get(`${import.meta.env.VITE_BURL}products`);
     return data;
   };
-  const { data, isLoading, isError, error } = useQuery({
+  const {
+    data: responseData,
+    isLoading,
+    isError,
+    error,
+  } = useQuery({
     queryKey: ["products"],
     queryFn: fetchProducts,
     staleTime: 6 * 60 * 60 * 1000,
@@ -29,9 +34,11 @@ function Products() {
     return console.error("No Products:", error.response?.data || error);
   if (isLoading) return <Loaderr />;
 
+  const products = responseData.data;
+
   return (
     <Grid container spacing={2} padding={2}>
-      {data.map((product) => (
+      {products.map((product) => (
         <Grid item xs={12} sm={6} md={4} lg={4} xl={3} key={product.id}>
           <Card>
             <CardMedia
