@@ -1,4 +1,4 @@
-import { Grid, Box, Typography } from "@mui/material";
+import { Grid, Box, Typography, useTheme } from "@mui/material";
 import { Link } from "react-router-dom";
 import Loaderr from "../loader/Loaderr";
 import { useQuery } from "@tanstack/react-query";
@@ -6,6 +6,8 @@ import axios from "axios";
 import computerImg from "../../assets/img/computer.png";
 
 function Category() {
+  const theme = useTheme();
+
   const fetchCategories = async () => {
     const { data } = await axios.get(`${import.meta.env.VITE_BURL}categories`);
     return data;
@@ -40,9 +42,9 @@ function Category() {
               justifyContent: "center",
               gap: 2,
               textAlign: "center",
+              color: theme.palette.text.primary,
             }}
           >
-            {/* Image Container */}
             <Box
               sx={{
                 width: 180,
@@ -65,16 +67,15 @@ function Category() {
               />
             </Box>
 
-            {/* Category Name */}
             <Typography
               variant="h6"
               component={Link}
               to={`/categories/${category.id}/products`}
               sx={{
                 textDecoration: "none",
-                color: "#121212",
+                color: theme.palette.text.primary,
                 "&:hover": {
-                  color: "#3f51b5",
+                  color: theme.palette.primary.main,
                 },
               }}
             >
