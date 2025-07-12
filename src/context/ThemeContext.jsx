@@ -6,7 +6,7 @@ import theme from "../theme/index.js";
 export const ThemeContext = createContext(null);
 
 const ThemeContextProvider = ({ children }) => {
-  const [mode, setMode] = useState("dark");
+  const [mode, setMode] = useState("light");
   const currentTheme = theme(mode);
   const toggleTheme = () => {
     setMode((prev) => (prev == "light" ? "dark" : "light"));

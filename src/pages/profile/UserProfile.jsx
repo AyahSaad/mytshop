@@ -56,10 +56,7 @@ const UserProfile = () => {
         sx={{ width: 80, height: 80, mb: 1 }}
       />
       <Typography variant="subtitle1" fontWeight="bold">
-        User Name
-      </Typography>
-      <Typography variant="body2" color="text.secondary" mb={2}>
-        Address
+        {JSON.parse(localStorage.getItem("userName"))}
       </Typography>
 
       <Divider sx={{ width: "100%", my: 2 }} />

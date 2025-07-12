@@ -20,6 +20,10 @@ import UserProfile from "./pages/profile/UserProfile";
 import UserOrders from "./pages/profile/UserOrders";
 import UserInfo from "./pages/profile/UserInfo";
 import CategoryProducts from "./pages/categoryproducts/CategoryProducts";
+import About from "./components/about/About";
+import Contact from "./components/Contact/Contact";
+import Products from "./components/products/Products";
+import Category from "./components/category/Category";
 const routes = createBrowserRouter([
   {
     path: "/",
@@ -31,6 +35,10 @@ const routes = createBrowserRouter([
         element: <Home />,
       },
       {
+        path: "/home",
+        element: <Home />,
+      },
+      {
         path: "/login",
         element: <Login />,
       },
@@ -38,7 +46,23 @@ const routes = createBrowserRouter([
         path: "/register",
         element: <Register />,
       },
+      {
+        path: "/about",
+        element: <About />,
+      },
+      {
+        path: "/categories",
+        element: <Category />,
+      },
+      {
+        path: "/products",
+        element: <Products />,
+      },
 
+      {
+        path: "/contact",
+        element: <Contact />,
+      },
       {
         path: "/cart",
         element: (
