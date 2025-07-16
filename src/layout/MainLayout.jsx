@@ -3,6 +3,7 @@ import Navbar from "../components/navbar/Navbar";
 import Footer from "./../components/footer/Footer";
 import { Box, Container } from "@mui/material";
 import SubscribeSection from "../components/SubscribeSection/SubscribeSection";
+import Ad from "../components/Ads/Ad";
 
 function MainLayout() {
   const location = useLocation();
@@ -14,7 +15,7 @@ function MainLayout() {
     <>
       {!hideLayout && <Navbar />}
       {hideLayout ? (
-        <Box sx={{ minHeight: "100vh" }}>
+        <Box sx={{ minHeight: "100vh", px: 0 }}>
           <Outlet />
         </Box>
       ) : (
@@ -28,6 +29,8 @@ function MainLayout() {
           >
             <Outlet />
           </Container>
+          {/* Only show Ads on the Home page */}
+          {isHomePage && <Ad />}
           {/* Only show SubscribeSection on the Home page */}
           {isHomePage && <SubscribeSection />}
         </>
