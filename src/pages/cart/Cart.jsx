@@ -1,21 +1,26 @@
 import React from "react";
 import {
+  Box,
+  Grid,
+  Typography,
   Card,
   CardMedia,
   CardContent,
-  Typography,
-  Box,
-  Grid,
   IconButton,
   Button,
+  Divider,
+  useTheme,
+  useMediaQuery,
 } from "@mui/material";
-import { Add, Delete, Remove } from "@mui/icons-material";
+import { Add, Remove, Delete, FavoriteBorder } from "@mui/icons-material";
 import Loaderr from "../../components/loader/Loaderr";
 import { Link } from "react-router-dom";
 import AxiosAut from "../../api/AxiosAut";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 
 function Cart() {
+  const theme = useTheme();
+  const isMobile = useMediaQuery(theme.breakpoints.down("sm"));
   const queryClient = useQueryClient();
 
   const { data, isLoading, isError, error, refetch } = useQuery({
@@ -56,104 +61,261 @@ function Cart() {
   if (isLoading) return <Loaderr />;
 
   const products = data.cartResponse || [];
-  const totalItems = products.reduce((sum, item) => sum + item.count, 0);
-  const totalPrice = products.reduce(
+  const subtotal = products.reduce(
     (sum, item) => sum + item.count * item.price,
     0
   );
+  const delivery = 20;
+  const vat = 10;
+  const discount = -100;
+  const total = subtotal + delivery + vat + discount;
+
   return (
-    <Box>
-      <Typography variant="h4" gutterBottom>
-        Shopping Cart
+    <Box p={isMobile ? 2 : 4}>
+      <Typography
+        variant="h4"
+        fontWeight="bold"
+        gutterBottom
+        color="text.primary"
+      >
+        Cart
       </Typography>
 
-      <Grid container spacing={4}>
-        <Grid item size={{ xs: 12, md: 8 }}>
-          {data.cartResponse.map((product) => (
-            <Card
-              sx={{
-                display: "flex",
-                alignItems: "center",
-                textAlign: "center",
-                p: 2,
-                mb: 2,
-              }}
-              key={product.id}
-            >
-              <CardMedia
-                component="img"
-                image="https://placehold.co/100"
-                alt=""
-                sx={{ borderRadius: 2, width: 200 }}
-              />
-              <CardContent>
-                <Typography variant="h4">{product.name}</Typography>
-                <Typography variant="h5" color="primary">
-                  {product.price}$
-                </Typography>
-              </CardContent>
-              <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
-                <IconButton onClick={() => decreaseQty.mutate(product.id)}>
-                  <Remove />
-                </IconButton>
-                <Typography>{product.count}</Typography>
-                <IconButton onClick={() => increaseQty.mutate(product.id)}>
-                  <Add />
-                </IconButton>
-                <IconButton
-                  onClick={() => deleteItem.mutate(product.id)}
-                  color="error"
+      <Grid container spacing={4} direction={isMobile ? "column" : "row"}>
+        {/* Cart Items */}
+        <Grid item xs={12} md={8}>
+          {products.length === 0 ? (
+            <Box textAlign="center" mt={5}>
+              <Typography variant="h6" color="text.secondary" fontWeight="bold">
+                <span style={{ fontSize: "2rem" }}>🛒</span> Your cart is empty
+              </Typography>
+              <Typography variant="body1" color="text.secondary" mt={1}>
+                Looks like you haven’t added anything yet. Let’s Shop now!
+              </Typography>
+              <Button
+                variant="contained"
+                sx={{
+                  mt: 3,
+                  backgroundColor: theme.palette.primary.main,
+                  color: theme.palette.primary.contrastText,
+                  "&:hover": { backgroundColor: "#3dbfc7" },
+                }}
+                component={Link}
+                to="/"
+              >
+                SHOP NOW
+              </Button>
+            </Box>
+          ) : (
+            <>
+              {products.map((product) => (
+                <Card
+                  key={product.id}
+                  sx={{
+                    display: "flex",
+                    mb: 2,
+                    p: 2,
+                    flexDirection: isMobile ? "column" : "row",
+                    backgroundColor: theme.palette.background.paper,
+                  }}
                 >
-                  <Delete />
-                </IconButton>
-              </Box>
-            </Card>
-          ))}
+                  <CardMedia
+                    component="img"
+                    image="https://placehold.co/200x150"
+                    alt={product.name}
+                    sx={{
+                      width: isMobile ? "100%" : 140,
+                      height: isMobile ? 140 : "auto",
+                      borderRadius: 2,
+                    }}
+                  />
+                  <CardContent sx={{ flex: 1 }}>
+                    <Typography
+                      variant="h6"
+                      fontWeight="bold"
+                      color="text.primary"
+                    >
+                      {product.name}
+                    </Typography>
+                    <Typography variant="body2" color="text.secondary">
+                      {product.description}
+                    </Typography>
+                    <Typography
+                      variant="h6"
+                      fontWeight="bold"
+                      mt={1}
+                      color="text.primary"
+                    >
+                      ${product.price}
+                    </Typography>
+                  </CardContent>
 
-          {products.length > 0 && (
-            <Button
-              variant="contained"
-              color="secondary"
-              onClick={clearCart.mutate}
-            >
-              Clear Cart
-            </Button>
+                  <Box
+                    display="flex"
+                    alignItems="center"
+                    gap={1}
+                    justifyContent="center"
+                    flexWrap="wrap"
+                    p={1}
+                  >
+                    <IconButton
+                      onClick={() => decreaseQty.mutate(product.id)}
+                      color="primary"
+                    >
+                      <Remove />
+                    </IconButton>
+                    <Typography color="text.primary">
+                      {product.count}
+                    </Typography>
+                    <IconButton
+                      onClick={() => increaseQty.mutate(product.id)}
+                      color="primary"
+                    >
+                      <Add />
+                    </IconButton>
+                    <IconButton
+                      onClick={() => deleteItem.mutate(product.id)}
+                      color="error"
+                    >
+                      <Delete />
+                    </IconButton>
+                    <IconButton>
+                      <FavoriteBorder
+                        sx={{ color: theme.palette.primary.main }}
+                      />
+                    </IconButton>
+                  </Box>
+                </Card>
+              ))}
+
+              <Button
+                variant="contained"
+                color="info"
+                sx={{
+                  mt: 2,
+                  backgroundColor: theme.palette.primary.main,
+                  color: theme.palette.primary.contrastText,
+                  "&:hover": { backgroundColor: "#3dbfc7" },
+                }}
+                onClick={clearCart.mutate}
+              >
+                CLEAR ALL
+              </Button>
+            </>
           )}
         </Grid>
 
-        <Grid item size={{ xs: 12, md: 4 }}>
-          <Card sx={{ p: 3, borderRadius: 2 }}>
-            <Typography variant="h5" color="primary" gutterBottom>
-              Order Summary
-            </Typography>
-            <Box display="flex" justifyContent="space-between" my={1}>
-              <Typography variant="body1" color="primary">
-                Total Items:
+        {/*  Order Summary */}
+        <Grid item xs={12} md={4}>
+          <Box
+            sx={{
+              bgcolor: theme.palette.background.paper,
+              borderRadius: 2,
+              p: 3,
+              boxShadow: 1,
+              minHeight: 200,
+              display: "flex",
+              flexDirection: "column",
+              justifyContent: products.length === 0 ? "center" : "flex-start",
+              alignItems: "center",
+            }}
+          >
+            {products.length === 0 ? (
+              <Typography variant="h6" color="text.secondary" fontWeight="bold">
+                Your Summary is empty
               </Typography>
-              <Typography variant="body1" color="primary">
-                {totalItems}
-              </Typography>
-            </Box>
-            <Box display="flex" justifyContent="space-between" my={1}>
-              <Typography variant="body1" color="primary">
-                Total Price:
-              </Typography>
-              <Typography variant="body1" color="primary">
-                ${totalPrice}
-              </Typography>
-            </Box>
-            <Button
-              variant="contained"
-              color="primary"
-              fullWidth
-              sx={{ mt: 3 }}
-              disabled={totalItems === 0}
-              component={Link}
-              to="/checkout"
-            >
-              Proceed to Checkout
-            </Button>
-          </Card>
+            ) : (
+              <>
+                <Typography
+                  variant="h6"
+                  fontWeight="bold"
+                  alignSelf="flex-start"
+                  mb={2}
+                  color="text.primary"
+                >
+                  Order Summary
+                </Typography>
+
+                <Box
+                  display="flex"
+                  justifyContent="space-between"
+                  width="100%"
+                  mb={1}
+                >
+                  <Typography color="text.secondary">Subtotal</Typography>
+                  <Typography color="text.primary">
+                    {subtotal.toFixed(2).replace(".", ",")}
+                  </Typography>
+                </Box>
+                <Box
+                  display="flex"
+                  justifyContent="space-between"
+                  width="100%"
+                  mb={1}
+                >
+                  <Typography color="text.secondary">
+                    Delivery Charges
+                  </Typography>
+                  <Typography color="text.primary">
+                    {delivery.toFixed(2).replace(".", ",")}
+                  </Typography>
+                </Box>
+                <Box
+                  display="flex"
+                  justifyContent="space-between"
+                  width="100%"
+                  mb={1}
+                >
+                  <Typography color="text.secondary">V.A.T</Typography>
+                  <Typography color="text.primary">
+                    {vat.toFixed(2).replace(".", ",")}
+                  </Typography>
+                </Box>
+                <Box
+                  display="flex"
+                  justifyContent="space-between"
+                  width="100%"
+                  mb={1}
+                >
+                  <Typography color="text.secondary">Discount</Typography>
+                  <Typography color="error">
+                    {discount.toFixed(2).replace(".", ",")}
+                  </Typography>
+                </Box>
+
+                <Divider sx={{ my: 2, width: "100%" }} />
+
+                <Box
+                  display="flex"
+                  justifyContent="space-between"
+                  width="100%"
+                  mb={2}
+                >
+                  <Typography variant="h6" color="text.primary">
+                    Total
+                  </Typography>
+                  <Typography variant="h6" color="text.primary">
+                    {total.toFixed(0)}$
+                  </Typography>
+                </Box>
+
+                <Button
+                  variant="contained"
+                  fullWidth
+                  size="large"
+                  component={Link}
+                  to="/checkout"
+                  sx={{
+                    backgroundColor: theme.palette.primary.main,
+                    color: theme.palette.primary.contrastText,
+                    "&:hover": { backgroundColor: "#3dbfc7" },
+                  }}
+                >
+                  PROCEED TO CHECKOUT
+                </Button>
+              </>
+            )}
+          </Box>
         </Grid>
       </Grid>
     </Box>

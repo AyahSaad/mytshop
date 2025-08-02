@@ -7,6 +7,7 @@ import {
   Divider,
   Container,
   Box,
+  TextField,
 } from "@mui/material";
 import { useTheme } from "@mui/material/styles";
 import { useQuery } from "@tanstack/react-query";
@@ -55,14 +56,13 @@ const UserInfo = () => {
           <Typography
             variant="h5"
             gutterBottom
-            sx={{ color: theme.palette.primary.main, fontWeight: "bold" }}
+            sx={{ color: theme.palette.primary.main }}
           >
             User Profile
           </Typography>
 
           <Divider sx={{ mb: 3 }} />
-
-          <Grid container spacing={2}>
+          <Grid container spacing={3}>
             {[
               { label: "First Name", value: userInfo?.firstName },
               { label: "Last Name", value: userInfo?.lastName },
@@ -72,22 +72,19 @@ const UserInfo = () => {
                 label: "Date of Birth",
                 value: userInfo?.birthOfDate
                   ? new Date(userInfo.birthOfDate).toLocaleDateString("en-US")
-                  : "Not available",
+                  : "",
               },
             ].map((item, index) => (
               <Grid item xs={12} sm={6} key={index}>
-                <Box>
-                  <Typography
-                    variant="subtitle2"
-                    fontWeight="medium"
-                    color="textSecondary"
-                  >
-                    {item.label}
-                  </Typography>
-                  <Typography variant="body1" fontWeight="500">
-                    {item.value || "Not available"}
-                  </Typography>
-                </Box>
+                <TextField
+                  fullWidth
+                  label={item.label}
+                  value={item.value || "Not available"}
+                  InputProps={{
+                    readOnly: true,
+                  }}
+                  variant="outlined"
+                />
               </Grid>
             ))}
           </Grid>

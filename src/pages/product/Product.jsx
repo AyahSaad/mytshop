@@ -1,34 +1,38 @@
 import { useParams } from "react-router";
-import Loaderr from "./../../components/loader/Loaderr";
 import {
-  Card,
-  CardMedia,
-  CardContent,
-  Typography,
   Box,
-  Grid,
-  Divider,
   Button,
+  Card,
+  CardContent,
+  CardMedia,
+  Divider,
+  Grid,
   Rating,
+  Typography,
   Avatar,
-  List,
-  ListItem,
-  ListItemAvatar,
-  ListItemText,
-  Paper,
+  Link as MuiLink,
+  IconButton,
+  TextField,
 } from "@mui/material";
 import { toast, Zoom } from "react-toastify";
+import ShoppingCartIcon from "@mui/icons-material/ShoppingCart";
+import AddIcon from "@mui/icons-material/Add";
+import RemoveIcon from "@mui/icons-material/Remove";
 import axios from "axios";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import AxiosAut from "../../api/AxiosAut";
 import { useState } from "react";
+import { Link } from "react-router-dom";
+import Loaderr from "../../components/loader/Loaderr";
+
 function Product() {
   const { id } = useParams();
   const isLoggedIn = !!localStorage.getItem("userToken");
   const currentUser = JSON.parse(localStorage.getItem("userName"));
-
   const [ratingValue, setRatingValue] = useState(0);
   const [commentText, setCommentText] = useState("");
+  const [mainImage, setMainImage] = useState("");
+  const [quantity, setQuantity] = useState(1);
   const queryClient = useQueryClient();
 
   const fetchProduct = async () => {
@@ -36,7 +40,6 @@ function Product() {
       `${import.meta.env.VITE_BURL}products/${id}`
     );
     console.log(" Product fetched:", data);
-
     return data;
   };
 
@@ -72,7 +75,7 @@ function Product() {
 
   const addReviewMutation = useMutation({
     mutationFn: async (reviewData) => {
-      console.log("📤 Sending review request:", reviewData);
+      console.log(" Sending review request:", reviewData);
       const response = await AxiosAut.post(
         `/products/${id}/Reviews/Create`,
         reviewData
@@ -105,136 +108,132 @@ function Product() {
   );
   console.log("User has already reviewed?", hasReviewed);
 
+  const allImages = [data.mainImg, ...(data.images || [])];
+
   return (
-    <Grid container justifyContent="center" padding={4} spacing={4}>
-      <Grid item xs={12} sm={8} md={6} lg={5}>
-        <Card>
-          <CardMedia
-            component="img"
-            height="200"
-            image={data.mainImg}
-            alt={data.name}
-            style={{ objectFit: "cover" }}
-          />
+    <Box sx={{ maxWidth: "1200px", mx: "auto", px: 2, py: 4 }}>
+      <Grid container spacing={4}>
+        {/* Product Images */}
+        <Grid item xs={12} md={6}>
+          <Box display="flex">
+            <CardMedia
+              component="img"
+              image={mainImage || data.mainImg}
+              sx={{
+                border: "2px solid #4fc4ca",
+                borderRadius: 2,
+                height: 400,
+                width: "100%",
+                objectFit: "contain",
+                p: 2,
+              }}
+            />
+          </Box>
+        </Grid>
 
-          <CardContent>
-            <Typography variant="h5" gutterBottom>
-              {data.name}
-            </Typography>
-
-            <Typography variant="body2" color="text.secondary" gutterBottom>
-              {data.description}
-            </Typography>
-
-            <Divider sx={{ my: 2 }} />
-
-            <Box display="flex" justifyContent="space-between" mb={1}>
-              <Typography variant="subtitle2">Price:</Typography>
-              <Typography variant="subtitle2">${data.price}</Typography>
-            </Box>
-
-            <Box display="flex" justifyContent="space-between" mb={1}>
-              <Typography variant="subtitle2">Discount:</Typography>
-              <Typography variant="subtitle2">{data.discount}%</Typography>
-            </Box>
-
-            <Box display="flex" justifyContent="space-between" mb={1}>
-              <Typography variant="subtitle2">Quantity:</Typography>
-              <Typography variant="subtitle2">{data.quantity}</Typography>
-            </Box>
-
-            <Box
-              display="flex"
-              justifyContent="space-between"
-              alignItems="center"
-            >
-              <Typography variant="subtitle2">Rating:</Typography>
-              <Rating value={data.rate} precision={0.5} readOnly />
-            </Box>
-          </CardContent>
-
-          <Button
-            variant="contained"
-            color="primary"
-            fullWidth
-            onClick={() => {
-              if (!isLoggedIn) {
-                toast.error("Please log in to add items to your cart.", {
-                  position: "top-right",
-                  autoClose: 5000,
-                  theme: "dark",
-                  transition: Zoom,
-                });
-                return;
-              }
-              handleAddToCartMutation.mutate(data.id);
-            }}
-            disabled={handleAddToCartMutation.isPending}
-          >
-            {handleAddToCartMutation.isPending ? "Adding..." : "Add to Cart"}
-          </Button>
-        </Card>
-      </Grid>
-
-      {/* Reviews Section */}
-      <Grid item xs={12} sm={10} md={8}>
-        <Paper elevation={3} sx={{ p: 2 }}>
-          <Typography variant="h6" gutterBottom>
-            User Reviews
+        {/* Product Info */}
+        <Grid item xs={12} md={6}>
+          <Typography variant="h5" fontWeight="bold">
+            {data.name}
           </Typography>
-          <Divider sx={{ mb: 2 }} />
+          <Typography color="text.secondary" mb={2}>
+            this is Samsung {data.name}
+          </Typography>
 
+          <Box display="flex" alignItems="center" gap={1}>
+            <Typography fontWeight="bold">Rate</Typography>
+            <Rating value={data.rate} precision={0.5} readOnly />
+            <Typography>({data.rate.toFixed(2)})</Typography>
+          </Box>
+
+          <Box mt={3}>
+            <Typography fontWeight="bold" fontSize="18px">
+              Price
+            </Typography>
+            <Typography fontWeight="bold" fontSize="24px" color="black">
+              ${data.price}
+            </Typography>
+          </Box>
+
+          <Box display="flex" alignItems="center" gap={1} mt={2}>
+            <IconButton
+              onClick={() => setQuantity((q) => Math.max(1, q - 1))}
+              size="small"
+              sx={{ border: "1px solid #ccc" }}
+            >
+              <RemoveIcon />
+            </IconButton>
+            <TextField
+              value={quantity}
+              inputProps={{ min: 1 }}
+              size="small"
+              sx={{ width: 50 }}
+              readOnly
+            />
+            <IconButton
+              onClick={() => setQuantity((q) => q + 1)}
+              size="small"
+              sx={{ border: "1px solid #ccc" }}
+            >
+              <AddIcon />
+            </IconButton>
+
+            <Button
+              variant="contained"
+              startIcon={<ShoppingCartIcon />}
+              sx={{
+                ml: 2,
+                backgroundColor: "#4fc4ca",
+                textTransform: "none",
+              }}
+              onClick={() => {
+                if (!isLoggedIn) {
+                  toast.error("Login to buy");
+                  return;
+                }
+                handleAddToCartMutation.mutate(data.id);
+              }}
+            >
+              Buy
+            </Button>
+          </Box>
+
+          {/* Add Review */}
           {isLoggedIn && (
-            <Box mb={3}>
-              <Typography variant="subtitle1" gutterBottom>
+            <Box mt={6}>
+              <Typography variant="h6" fontWeight="bold" gutterBottom>
                 Add Your Review
               </Typography>
-
               <Rating
-                name="user-rating"
                 value={ratingValue}
-                onChange={(e, newValue) => setRatingValue(newValue)}
+                onChange={(e, newVal) => setRatingValue(newVal)}
                 precision={0.5}
               />
-
-              <Box mt={2}>
-                <textarea
-                  value={commentText}
-                  onChange={(e) => setCommentText(e.target.value)}
-                  rows={3}
-                  placeholder="Write your comment..."
-                  style={{
-                    width: "100%",
-                    padding: "8px",
-                    borderRadius: "4px",
-                    border: "1px solid #ccc",
-                    resize: "none",
-                  }}
-                />
-              </Box>
-
-              <Button
-                variant="contained"
-                color="secondary"
+              <TextField
+                placeholder="Your Comment"
+                multiline
+                fullWidth
+                rows={3}
+                value={commentText}
+                onChange={(e) => setCommentText(e.target.value)}
                 sx={{ mt: 2 }}
+              />
+              <Button
+                fullWidth
+                sx={{ mt: 2, backgroundColor: "#4fc4ca", color: "#312d5f" }}
                 onClick={() => {
                   if (!ratingValue || !commentText.trim()) {
                     toast.warn("Please add rating and comment");
                     return;
                   }
-
                   if (hasReviewed) {
-                    toast.warn(
-                      "You have already submitted a review for this product."
-                    );
-                    console.log(" Review blocked: user already reviewed");
+                    toast.warn("You already submitted a review");
                     return;
                   }
                   const reviewData = {
-                    Rate: ratingValue,
+                    Rate: Math.round(ratingValue),
                     Comment: commentText.trim(),
                   };
-
                   addReviewMutation.mutate(reviewData);
                 }}
               >
@@ -242,61 +241,116 @@ function Product() {
               </Button>
             </Box>
           )}
+        </Grid>
 
-          {data.reviews?.length === 0 ? (
-            <Typography color="text.secondary">No reviews yet.</Typography>
-          ) : (
-            <List>
+        {/* Customer Reviews */}
+        <Box sx={{ width: "100%", px: 2, mt: 6 }}>
+          <Typography variant="h6" fontWeight="bold" gutterBottom>
+            Customer Reviews
+          </Typography>
+          <Divider sx={{ mb: 3 }} />
+
+          {/* {data.reviews?.length ? (
+            <Box display="flex" flexDirection="column" gap={2}>
               {data.reviews.map((review) => (
-                <ListItem key={review.id} alignItems="flex-start">
-                  <ListItemAvatar>
-                    <Avatar>
-                      {review.reviewerName?.charAt(0).toUpperCase() || "U"}
-                    </Avatar>
-                  </ListItemAvatar>
-                  <ListItemText
-                    primary={
-                      <Box display="flex" alignItems="center" gap={1}>
-                        <Typography fontWeight="bold" component="span">
-                          {review.reviewerName || "Anonymous"}
-                        </Typography>
-                        <Typography
-                          variant="body2"
-                          color="text.secondary"
-                          component="span"
-                        >
-                          –{" "}
-                          {new Date(review.reviewDate).toLocaleDateString(
-                            "en-US"
-                          )}
-                        </Typography>
-                      </Box>
-                    }
-                    secondary={
-                      <>
-                        <Rating
-                          value={review.rate}
-                          readOnly
-                          precision={0.5}
-                          size="small"
-                        />
-                        <Typography
-                          variant="body1"
-                          component="span"
-                          display="block"
-                        >
-                          {review.comment}
-                        </Typography>
-                      </>
-                    }
-                  />
-                </ListItem>
+                <Card
+                  key={review.id}
+                  variant="outlined"
+                  sx={{
+                    width: "100%",
+                    borderRadius: 2,
+                    px: 2,
+                    py: 1,
+                    boxShadow: 1,
+                  }}
+                >
+                  <CardContent sx={{ p: 0 }}>
+                    <Box display="flex" alignItems="center" gap={2} mb={1}>
+                      <Avatar>
+                        {review.reviewerName.charAt(0).toUpperCase()}
+                      </Avatar>
+                      <Typography fontWeight="bold">
+                        {review.reviewerName}
+                      </Typography>
+                    </Box>
+
+                    <Typography sx={{ mb: 1 }}>{review.comment}</Typography>
+
+                    <Rating
+                      value={review.rate}
+                      readOnly
+                      precision={0.5}
+                      size="small"
+                      sx={{ mb: 1 }}
+                    />
+
+                    <Box display="flex" justifyContent="flex-end">
+                      <Typography variant="body2" color="text.secondary">
+                        {new Date(review.reviewDate).toLocaleDateString(
+                          "en-US"
+                        )}
+                      </Typography>
+                    </Box>
+                  </CardContent>
+                </Card>
               ))}
-            </List>
+            </Box>
+          ) : (
+            <Typography color="text.secondary">No reviews yet.</Typography>
           )}
-        </Paper>
+        </Box>
+      </Grid> */}
+          {data.reviews?.length ? (
+            <Box display="flex" flexDirection="column" gap={2}>
+              {data.reviews.map((review) => (
+                <Card
+                  key={review.id}
+                  variant="outlined"
+                  sx={{
+                    width: "100%",
+                    borderRadius: 2,
+                    px: 2,
+                    py: 1,
+                    boxShadow: 1,
+                  }}
+                >
+                  <CardContent sx={{ p: 0 }}>
+                    <Box display="flex" alignItems="center" gap={2} mb={1}>
+                      <Avatar>
+                        {review.reviewerName?.charAt(0).toUpperCase() || "U"}
+                      </Avatar>
+                      <Typography fontWeight="bold">
+                        {review.reviewerName || "Anonymous"}
+                      </Typography>
+                    </Box>
+
+                    <Typography sx={{ mb: 1 }}>{review.comment}</Typography>
+
+                    <Rating
+                      value={review.rate}
+                      readOnly
+                      precision={0.5}
+                      size="small"
+                      sx={{ mb: 1 }}
+                    />
+
+                    <Box display="flex" justifyContent="flex-end">
+                      <Typography variant="body2" color="text.secondary">
+                        {new Date(review.reviewDate).toLocaleDateString(
+                          "en-US"
+                        )}
+                      </Typography>
+                    </Box>
+                  </CardContent>
+                </Card>
+              ))}
+            </Box>
+          ) : (
+            <Typography color="text.secondary">No reviews yet.</Typography>
+          )}
+        </Box>
       </Grid>
-    </Grid>
+    </Box>
   );
 }
 

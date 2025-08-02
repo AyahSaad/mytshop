@@ -47,7 +47,8 @@ const UserProfile = () => {
         display: "flex",
         flexDirection: "column",
         alignItems: "center",
-        height: "100%",
+        borderRadius: 2,
+        boxShadow: 2,
       }}
     >
       <Avatar
@@ -108,8 +109,8 @@ const UserProfile = () => {
   );
 
   return (
-    <Box sx={{ display: "flex", minHeight: "100vh" }}>
-      {/* Show menu icon on mobile */}
+    <Box sx={{ display: "flex", flexDirection: { xs: "column", md: "row" } }}>
+      {/* Mobile menu icon */}
       {isMobile && (
         <IconButton
           onClick={() => setMobileOpen(true)}
@@ -119,7 +120,7 @@ const UserProfile = () => {
         </IconButton>
       )}
 
-      {/* Sidebar: Drawer on mobile, Box on desktop */}
+      {/* Sidebar */}
       {isMobile ? (
         <Drawer
           anchor="left"
@@ -133,16 +134,15 @@ const UserProfile = () => {
         <Box
           sx={{
             width: 280,
-            borderRight: `1px solid ${theme.palette.divider}`,
-            bgcolor: theme.palette.background.paper,
-            boxShadow: 2,
+            p: 2,
+            alignSelf: "flex-start",
           }}
         >
           {drawerContent}
         </Box>
       )}
 
-      {/* Main content */}
+      {/* Main content area */}
       <Box sx={{ flex: 1, p: { xs: 2, md: 4 }, mt: isMobile ? 6 : 0 }}>
         <Outlet />
       </Box>

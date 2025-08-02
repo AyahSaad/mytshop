@@ -1,7 +1,12 @@
 import React from "react";
+import About from "../about/About";
 
 function Contact() {
-  return <div>Contact</div>;
+  return (
+    <>
+      <About />
+    </>
+  );
 }
 
 export default Contact;
