@@ -37,3 +37,6 @@ https://ka-store-o4zv.onrender.com/
 - React Query (for data fetching and caching)
 - Axios (with a custom instance for API calls)
 - CSS / SCSS for styling
+
+- Notes
+You need to be logged in to access the Cart and Checkout pages.
