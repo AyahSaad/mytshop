@@ -7,7 +7,6 @@ It includes user authentication, product browsing, cart management, and checkout
 ## Demo
 https://ka-store-o4zv.onrender.com/
 <img width="1897" height="862" alt="Screenshot 2025-08-12 124900" src="https://github.com/user-attachments/assets/2c752240-6a63-41cf-803c-a0b71e49732c" />
-<img width="496" height="330" alt="Screenshot 2025-07-12 181718" src="https://github.com/user-attachments/assets/36c9d97c-ea5f-49ca-8a95-86b60842bc55" />
 
 ## Features
 - User Authentication:
